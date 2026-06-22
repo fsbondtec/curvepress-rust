@@ -22,8 +22,6 @@ jobs:
         with:
           target: ${{ matrix.target }}
           manylinux: auto
-          maturin-version: v1.13.1
-          sccache: "true"
           args: --release --out dist -i python3.9 python3.10 python3.11 python3.12 python3.13 python3.14
       - uses: actions/upload-artifact@v7
         with:
@@ -44,8 +42,6 @@ jobs:
         with:
           target: ${{ matrix.target }}
           manylinux: musllinux_1_2
-          maturin-version: v1.13.1
-          sccache: "true"
           args: --release --out dist -i python3.9 python3.10 python3.11 python3.12 python3.13 python3.14
       - uses: actions/upload-artifact@v7
         with:
@@ -68,8 +64,6 @@ jobs:
           architecture: x64
       - uses: PyO3/maturin-action@v1
         with:
-          maturin-version: v1.13.1
-          sccache: "true"
           args: --release --out dist --find-interpreter
       - uses: actions/upload-artifact@v7
         with:
@@ -91,8 +85,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - uses: PyO3/maturin-action@v1
         with:
-          maturin-version: v1.13.1
-          sccache: "true"
           args: --release --out dist --find-interpreter
       - uses: actions/upload-artifact@v7
         with:
@@ -107,7 +99,6 @@ jobs:
       - uses: actions/checkout@v5
       - uses: PyO3/maturin-action@v1
         with:
-          maturin-version: v1.13.1
           command: sdist
           args: --out dist
       - uses: actions/upload-artifact@v7
