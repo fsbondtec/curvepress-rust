@@ -57,7 +57,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        # 3.14 dropped: maturin produces a Windows wheel with trailing data
+        # that PyPI rejects (ZIP validation). Re-add once maturin ships a fix.
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -76,8 +78,6 @@ jobs:
   # ─── macOS (Apple Silicon, arm64) ───────────────────────────────────────────
   macos:
     name: macOS (arm64, py${{ matrix.python-version }})
-    # Apple Silicon only. Intel (x86_64 / macos-13) dropped: long runner queue
-    # + shrinking userbase. Intel users fall back to building from the sdist.
     runs-on: macos-14
     strategy:
       fail-fast: false
