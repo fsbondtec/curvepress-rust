@@ -5,7 +5,7 @@
 use pyo3::prelude::*;
 use numpy::{PyArray1, PyReadonlyArray1, IntoPyArray};
 
-fn stats_to_dict(py: Python<'_>, s: &crate::Stats) -> PyResult<pyo3::types::PyObject> {
+fn stats_to_dict(py: Python<'_>, s: &crate::Stats) -> PyResult<Py<PyAny>> {
     let dict = pyo3::types::PyDict::new(py);
     dict.set_item("n_input", s.n_input)?;
     dict.set_item("n_kept", s.n_kept)?;
@@ -14,7 +14,7 @@ fn stats_to_dict(py: Python<'_>, s: &crate::Stats) -> PyResult<pyo3::types::PyOb
     dict.set_item("ratio", s.ratio)?;
     dict.set_item("max_error", s.max_error)?;
     dict.set_item("quant_bits", s.quant_bits)?;
-    Ok(dict.into())
+    Ok(dict.into_any().unbind())
 }
 
 /// Compress with Ramer-Douglas-Peucker.
@@ -34,7 +34,7 @@ fn compress_rdp<'py>(
 ) -> PyResult<Py<pyo3::types::PyBytes>> {
     let out = crate::compress_rdp(timestamps.as_slice()?, values.as_slice()?, epsilon)
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-    Ok(pyo3::types::PyBytes::new(py, &out).into())
+    Ok(pyo3::types::PyBytes::new(py, &out).unbind())
 }
 
 /// Compress with RDP and return (bytes, stats_dict).
@@ -45,10 +45,10 @@ fn compress_rdp_stats<'py>(
     timestamps: PyReadonlyArray1<i64>,
     values: PyReadonlyArray1<f64>,
     epsilon: f64,
-) -> PyResult<(Py<pyo3::types::PyBytes>, pyo3::types::PyObject)> {
+) -> PyResult<(Py<pyo3::types::PyBytes>, Py<PyAny>)> {
     let (out, stats) = crate::compress_rdp_stats(timestamps.as_slice()?, values.as_slice()?, epsilon)
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-    Ok((pyo3::types::PyBytes::new(py, &out).into(), stats_to_dict(py, &stats)?))
+    Ok((pyo3::types::PyBytes::new(py, &out).unbind(), stats_to_dict(py, &stats)?))
 }
 
 /// Compress with Visvalingam-Whyatt.
@@ -68,7 +68,7 @@ fn compress_vw<'py>(
 ) -> PyResult<Py<pyo3::types::PyBytes>> {
     let out = crate::compress_vw(timestamps.as_slice()?, values.as_slice()?, n_out)
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-    Ok(pyo3::types::PyBytes::new(py, &out).into())
+    Ok(pyo3::types::PyBytes::new(py, &out).unbind())
 }
 
 /// Compress with VW and return (bytes, stats_dict).
@@ -79,10 +79,10 @@ fn compress_vw_stats<'py>(
     timestamps: PyReadonlyArray1<i64>,
     values: PyReadonlyArray1<f64>,
     n_out: usize,
-) -> PyResult<(Py<pyo3::types::PyBytes>, pyo3::types::PyObject)> {
+) -> PyResult<(Py<pyo3::types::PyBytes>, Py<PyAny>)> {
     let (out, stats) = crate::compress_vw_stats(timestamps.as_slice()?, values.as_slice()?, n_out)
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-    Ok((pyo3::types::PyBytes::new(py, &out).into(), stats_to_dict(py, &stats)?))
+    Ok((pyo3::types::PyBytes::new(py, &out).unbind(), stats_to_dict(py, &stats)?))
 }
 
 /// Compress with RDP-N (binary-searched epsilon to hit `n_out` points).
@@ -104,7 +104,7 @@ fn compress_rdpn<'py>(
 ) -> PyResult<Py<pyo3::types::PyBytes>> {
     let out = crate::compress_rdpn(timestamps.as_slice()?, values.as_slice()?, n_out, epsilon)
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-    Ok(pyo3::types::PyBytes::new(py, &out).into())
+    Ok(pyo3::types::PyBytes::new(py, &out).unbind())
 }
 
 /// Compress with RDP-N and return (bytes, stats_dict).
@@ -116,10 +116,10 @@ fn compress_rdpn_stats<'py>(
     values: PyReadonlyArray1<f64>,
     n_out: usize,
     epsilon: f64,
-) -> PyResult<(Py<pyo3::types::PyBytes>, pyo3::types::PyObject)> {
+) -> PyResult<(Py<pyo3::types::PyBytes>, Py<PyAny>)> {
     let (out, stats) = crate::compress_rdpn_stats(timestamps.as_slice()?, values.as_slice()?, n_out, epsilon)
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-    Ok((pyo3::types::PyBytes::new(py, &out).into(), stats_to_dict(py, &stats)?))
+    Ok((pyo3::types::PyBytes::new(py, &out).unbind(), stats_to_dict(py, &stats)?))
 }
 
 /// Decompress bytes → (timestamps: int64 array, values: float64 array).
@@ -130,7 +130,7 @@ fn decompress<'py>(
 ) -> PyResult<(Py<PyArray1<i64>>, Py<PyArray1<f64>>)> {
     let (ts, val) = crate::decompress(data)
         .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
-    Ok((ts.into_pyarray(py).into(), val.into_pyarray(py).into()))
+    Ok((ts.into_pyarray(py).unbind(), val.into_pyarray(py).unbind()))
 }
 
 /// Reconstruct the value at a single timestamp `t` from the support points.

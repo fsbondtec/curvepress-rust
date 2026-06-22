@@ -8,6 +8,7 @@ dist/
 __pycache__/
 *.pyo
 *.pyc
+*.pyd
 .venv/
 
 # C++ build
