@@ -1,6 +1,4 @@
-﻿[![Release (PyPI)](https://github.com/fsbondtec/curvepress/actions/workflows/release.yml/badge.svg)](https://github.com/fsbondtec/curvepress/actions/workflows/release.yml)
-
-# curvepress
+﻿# curvepress
 
 Lossy time series compression -- RDP/VW point reduction + epsilon-derived quantization + varint packing.
 Designed for sharp transient signals (fracture curves, impulse tests, load cells).
