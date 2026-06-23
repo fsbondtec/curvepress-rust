@@ -1,4 +1,14 @@
-﻿# curvepress
+﻿[![Release (crates.io)](https://github.com/fsbondtec/curvepress/actions/workflows/release-crates.yml/badge.svg)](https://github.com/fsbondtec/curvepress/actions/workflows/release-crates.yml)
+[![Release (npm)](https://github.com/fsbondtec/curvepress/actions/workflows/release-npm.yml/badge.svg)](https://github.com/fsbondtec/curvepress/actions/workflows/release-npm.yml)
+[![Release (PyPI)](https://github.com/fsbondtec/curvepress/actions/workflows/release-pypi.yml/badge.svg)](https://github.com/fsbondtec/curvepress/actions/workflows/release-pypi.yml)
+[![CI](https://github.com/fsbondtec/curvepress/actions/workflows/ci.yml/badge.svg)](https://github.com/fsbondtec/curvepress/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/fsbondtec/curvepress/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/fsbondtec/curvepress/actions/workflows/github-code-scanning/codeql)
+![GitHub License](https://img.shields.io/github/license/fsbondtec/curvepress)
+![GitHub Release](https://img.shields.io/github/v/release/fsbondtec/curvepress)
+
+
+
+# curvepress
 
 Lossy time series compression -- RDP/VW point reduction + epsilon-derived quantization + varint packing.
 Designed for sharp transient signals (fracture curves, impulse tests, load cells).
