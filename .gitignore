@@ -14,5 +14,9 @@ __pycache__/
 # C++ build
 cpp/build/
 
+# Conan (test_package build artifacts)
+test_package/build/
+test_package/CMakeUserPresets.json
+
 # wasm-pack
 .wasm-pack/

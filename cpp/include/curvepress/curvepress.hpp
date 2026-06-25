@@ -10,6 +10,7 @@
 
 #include <curvepress.h>   // cbindgen-generated, from include/curvepress.h
 #include <cstdint>
+#include <cstring>        // std::memcpy (used in decompress)
 #include <span>
 #include <stdexcept>
 #include <string>
