@@ -1,5 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use curvepress::{compress, Algo, Config};
+use curvepress::{compress_rdp, compress_vw};
 
 fn fracture_series(n: usize) -> (Vec<i64>, Vec<f64>) {
     let ts: Vec<i64> = (0..n as i64).map(|i| i * 100_000).collect();
@@ -19,25 +19,22 @@ fn fracture_series(n: usize) -> (Vec<i64>, Vec<f64>) {
 
 fn bench_rdp(c: &mut Criterion) {
     let (ts, val) = fracture_series(100_000);
-    let cfg = Config { algo: Algo::Rdp, epsilon: 0.5, ..Default::default() };
     c.bench_function("rdp_100k", |b| {
-        b.iter(|| compress(black_box(&ts), black_box(&val), black_box(&cfg)).unwrap())
+        b.iter(|| compress_rdp(black_box(&ts), black_box(&val), black_box(0.5)).unwrap())
     });
 }
 
 fn bench_vw(c: &mut Criterion) {
     let (ts, val) = fracture_series(100_000);
-    let cfg = Config { algo: Algo::Vw, n_out: 1000, ..Default::default() };
     c.bench_function("vw_100k", |b| {
-        b.iter(|| compress(black_box(&ts), black_box(&val), black_box(&cfg)).unwrap())
+        b.iter(|| compress_vw(black_box(&ts), black_box(&val), black_box(1000)).unwrap())
     });
 }
 
 fn bench_rdp_1m(c: &mut Criterion) {
     let (ts, val) = fracture_series(1_000_000);
-    let cfg = Config { algo: Algo::Rdp, epsilon: 0.5, ..Default::default() };
     c.bench_function("rdp_1m", |b| {
-        b.iter(|| compress(black_box(&ts), black_box(&val), black_box(&cfg)).unwrap())
+        b.iter(|| compress_rdp(black_box(&ts), black_box(&val), black_box(0.5)).unwrap())
     });
 }
 
