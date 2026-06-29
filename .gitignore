@@ -2,21 +2,5 @@
 /pkg/
 /pkg-node/
 
-# Python build artifacts
-*.egg-info/
-dist/
-__pycache__/
-*.pyo
-*.pyc
-*.pyd
-.venv/
-
-# C++ build
-cpp/build/
-
-# Conan (test_package build artifacts)
-test_package/build/
-test_package/CMakeUserPresets.json
-
 # wasm-pack
 .wasm-pack/

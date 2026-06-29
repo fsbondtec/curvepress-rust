@@ -42,27 +42,3 @@ jobs:
         run: wasm-pack build --target nodejs --out-dir pkg --features wasm
       - name: Run WASM tests
         run: node tests/wasm/test_wasm.mjs
-
-  # ─── C++ binding (Conan recipe + test_package) ────────────────────────────────
-  conan:
-    name: Conan (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-14]
-    steps:
-      - uses: actions/checkout@v5
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-      - name: Install Conan
-        run: pip install "conan>=2.0"
-      - name: Conan profile detect
-        run: conan profile detect --force
-      # `conan create` builds the recipe AND runs test_package (compile + link +
-      # run), validating the C ABI header and the per-OS system_libs.
-      - name: conan create
-        run: conan create .

@@ -1,18 +1,19 @@
-﻿[![Release (crates.io)](https://github.com/fsbondtec/curvepress/actions/workflows/release-crates.yml/badge.svg)](https://github.com/fsbondtec/curvepress/actions/workflows/release-crates.yml)
-[![Release (npm)](https://github.com/fsbondtec/curvepress/actions/workflows/release-npm.yml/badge.svg)](https://github.com/fsbondtec/curvepress/actions/workflows/release-npm.yml)
-[![Release (PyPI)](https://github.com/fsbondtec/curvepress/actions/workflows/release-pypi.yml/badge.svg)](https://github.com/fsbondtec/curvepress/actions/workflows/release-pypi.yml)
-[![CI](https://github.com/fsbondtec/curvepress/actions/workflows/ci.yml/badge.svg)](https://github.com/fsbondtec/curvepress/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/fsbondtec/curvepress/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/fsbondtec/curvepress/actions/workflows/github-code-scanning/codeql)
-![GitHub License](https://img.shields.io/github/license/fsbondtec/curvepress)
-![GitHub Release](https://img.shields.io/github/v/release/fsbondtec/curvepress)
+[![Release (crates.io)](https://github.com/fsbondtec/curvepress-rust/actions/workflows/release-crates.yml/badge.svg)](https://github.com/fsbondtec/curvepress-rust/actions/workflows/release-crates.yml)
+[![Release (npm)](https://github.com/fsbondtec/curvepress-rust/actions/workflows/release-npm.yml/badge.svg)](https://github.com/fsbondtec/curvepress-rust/actions/workflows/release-npm.yml)
+[![CI](https://github.com/fsbondtec/curvepress-rust/actions/workflows/ci.yml/badge.svg)](https://github.com/fsbondtec/curvepress-rust/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/fsbondtec/curvepress-rust/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/fsbondtec/curvepress-rust/actions/workflows/github-code-scanning/codeql)
+![GitHub License](https://img.shields.io/github/license/fsbondtec/curvepress-rust)
+![GitHub Release](https://img.shields.io/github/v/release/fsbondtec/curvepress-rust)
 
 
 
-# curvepress
+# curvepress (Rust + WASM)
 
 Lossy time series compression -- RDP/VW point reduction + epsilon-derived quantization + varint packing.
 Designed for sharp transient signals (fracture curves, impulse tests, load cells).
-One Rust core; four language targets.
+
+> **C++ / Python / Conan** bindings live in the companion repository
+> [fsbondtec/curvepress](https://github.com/fsbondtec/curvepress).
 
 ## Architecture
 
@@ -32,19 +33,15 @@ raw (int64 timestamps_ns + float64 values)
                      |   rdp  vw  quantize     |
                      |   varint  codec         |
                      +------------+------------+
-            +--------------+------+-------+------------------+
-            |              |              |                  |
-      native crate   wasm-bindgen      PyO3           cbindgen + .hpp
-            |              |              |                  |
-         (Rust)         (WASM)        (Python)             (C++)
-       crates.io     npm package     PyPI wheel       Conan package
+                    /                           \
+             wasm-bindgen                  native crate
+                    |                           |
+                 (WASM)                       (Rust)
+              npm package                  crates.io
 ```
 
 - **Rust** -- the core crate; published to crates.io.
 - **WASM** -- via `wasm-bindgen` / `wasm-pack`. Direct Rust->WASM, no C ABI.
-- **Python** -- via `PyO3` + `maturin`. Direct Rust->CPython, no C ABI.
-- **C++** -- `cbindgen` auto-generates `include/curvepress.h` from `src/capi.rs`.
-  `cpp/include/curvepress/curvepress.hpp` wraps it with idiomatic C++20 (`std::span`, exceptions).
 
 ---
 
@@ -108,7 +105,7 @@ The 0.5x overhead comes from quantization (float64 -> integer grid at spacing ep
 
 ## API reference
 
-All four language bindings expose the same six functions plus `decompress`, `interpolate`,
+Both language bindings expose the same six functions plus `decompress`, `interpolate`,
 and `version`.
 
 ### compress_rdp
@@ -119,9 +116,6 @@ Compress with RDP. `epsilon` is the maximum absolute error in the value domain.
 |----------|-----------|
 | Rust     | `compress_rdp(ts: &[i64], val: &[f64], epsilon: f64) -> Result<Vec<u8>>` |
 | Rust     | `compress_rdp_stats(ts, val, epsilon) -> Result<(Vec<u8>, Stats)>` |
-| Python   | `compress_rdp(timestamps, values, epsilon) -> bytes` |
-| Python   | `compress_rdp_stats(timestamps, values, epsilon) -> tuple[bytes, Stats]` |
-| C++      | `compress_rdp(span<i64>, span<f64>, epsilon, Stats* = nullptr) -> vector<uint8_t>` |
 | WASM     | `compress_rdp(BigInt64Array, Float64Array, number) -> Uint8Array` |
 
 ### compress_vw
@@ -132,9 +126,6 @@ Compress with Visvalingam-Whyatt. `n_out` is the exact number of kept points.
 |----------|-----------|
 | Rust     | `compress_vw(ts: &[i64], val: &[f64], n_out: usize) -> Result<Vec<u8>>` |
 | Rust     | `compress_vw_stats(ts, val, n_out) -> Result<(Vec<u8>, Stats)>` |
-| Python   | `compress_vw(timestamps, values, n_out) -> bytes` |
-| Python   | `compress_vw_stats(timestamps, values, n_out) -> tuple[bytes, Stats]` |
-| C++      | `compress_vw(span<i64>, span<f64>, n_out, Stats* = nullptr) -> vector<uint8_t>` |
 | WASM     | `compress_vw(BigInt64Array, Float64Array, number) -> Uint8Array` |
 
 ### compress_rdpn
@@ -145,9 +136,6 @@ Compress with RDP-N. Keeps at most `n_out` points; `epsilon` is the search upper
 |----------|-----------|
 | Rust     | `compress_rdpn(ts: &[i64], val: &[f64], n_out: usize, epsilon: f64) -> Result<Vec<u8>>` |
 | Rust     | `compress_rdpn_stats(ts, val, n_out, epsilon) -> Result<(Vec<u8>, Stats)>` |
-| Python   | `compress_rdpn(timestamps, values, n_out, epsilon) -> bytes` |
-| Python   | `compress_rdpn_stats(timestamps, values, n_out, epsilon) -> tuple[bytes, Stats]` |
-| C++      | `compress_rdpn(span<i64>, span<f64>, n_out, epsilon, Stats* = nullptr) -> vector<uint8_t>` |
 | WASM     | `compress_rdpn(BigInt64Array, Float64Array, number, number) -> Uint8Array` |
 
 ### decompress
@@ -157,8 +145,6 @@ Decompress a byte stream produced by any `compress_*` function.
 | Language | Signature |
 |----------|-----------|
 | Rust     | `decompress(data: &[u8]) -> Result<(Vec<i64>, Vec<f64>)>` |
-| Python   | `decompress(data: bytes) -> tuple[ndarray, ndarray]` |
-| C++      | `decompress(span<uint8_t>) -> Decoded` (`Decoded.timestamps_ns`, `Decoded.values`) |
 | WASM     | `decompress(Uint8Array) -> Decoded` (`Decoded.timestamps`, `Decoded.values`, `Decoded.len`) |
 
 ### interpolate
@@ -169,8 +155,6 @@ points. Clamps (flat extrapolation) outside the data range.
 | Language | Signature |
 |----------|-----------|
 | Rust     | `interpolate(ts: &[i64], val: &[f64], t: i64) -> Result<f64>` |
-| Python   | `interpolate(timestamps, values, t: int) -> float` |
-| C++      | `interpolate(span<i64>, span<f64>, t: int64_t) -> double` |
 | WASM     | `interpolate(BigInt64Array, Float64Array, t: bigint) -> number` |
 
 ### Stats
@@ -187,18 +171,24 @@ Returned by the `*_stats` variants. Contains:
 | `max_error`        | f64      | Maximum value-domain error of dropped points     |
 | `quant_bits`       | u32      | Quantization bit-width used                      |
 
+### Error handling
+
+All functions return `Result<_, CpError>`. WASM functions panic on error (surfaced as a JavaScript exception).
+
+| Variant              | Cause                                                           |
+|----------------------|-----------------------------------------------------------------|
+| `CpError::BadInput`  | Empty arrays, non-monotonic timestamps, NaN/Inf values          |
+| `CpError::Corrupt`   | Byte stream is corrupted or truncated                           |
+
 ---
 
 ## Installation
 
-### Python (PyPI)
+### Rust (crates.io)
 
 ```bash
-pip install curvepress
+cargo add curvepress
 ```
-
-Pre-built wheels for CPython 3.9–3.14 on Linux, macOS (Apple Silicon) and
-Windows — no Rust toolchain needed. Pulls in `numpy`.
 
 ### JavaScript / TypeScript (npm)
 
@@ -207,63 +197,7 @@ npm install curvepress
 ```
 
 A pre-built WebAssembly package, usable from bundlers (webpack/Vite/Rollup)
-and Node.js ≥ 18.
-
-### Rust (crates.io)
-
-```bash
-cargo add curvepress
-```
-
-### C++ (Conan — local recipe)
-
-curvepress is a Rust library, so it is **not on ConanCenter**. Build the
-package locally from the cloned repo (needs a **Rust toolchain + a C++
-compiler**); the binary lands in your local Conan cache:
-
-```bash
-git clone https://github.com/fsbondtec/curvepress
-cd curvepress
-conan create . --version 0.1.0
-```
-
-Then consume it from your project:
-
-```bash
-conan install --requires=curvepress/0.1.0
-```
-
-```cmake
-find_package(curvepress CONFIG REQUIRED)
-target_link_libraries(my_target PRIVATE curvepress::curvepress)
-```
-
-### C++ from source (without Conan)
-
-Build the Rust static library — this also generates the C header:
-
-```bash
-cargo build --release --features capi
-#  -> target/release/libcurvepress.a   (curvepress.lib on Windows)
-#  -> include/curvepress.h             (generated by cbindgen)
-```
-
-Add both header directories (`include/` and `cpp/include/`) to your include
-path and link the static library plus its system dependencies:
-
-| Platform | Link flags |
-|----------|------------|
-| Linux    | `-Ltarget/release -lcurvepress -lpthread -ldl -lm` |
-| macOS    | `-Ltarget/release -lcurvepress -framework Security -framework CoreFoundation` |
-| Windows  | `curvepress.lib ws2_32.lib userenv.lib ntdll.lib bcrypt.lib` |
-
-Or build via the bundled CMake project, which exposes the
-`curvepress::curvepress` target:
-
-```bash
-cmake -S cpp -B cpp/build -DCMAKE_BUILD_TYPE=Release
-cmake --build cpp/build --config Release
-```
+and Node.js >= 18.
 
 ---
 
@@ -288,59 +222,6 @@ let (ts_out, val_out) = decompress(&data)?;
 
 // Interpolate at a single timestamp
 let v = interpolate(&ts_out, &val_out, 5_000_000_000_i64)?;
-```
-
-### C++ (CMake)
-
-```cmake
-find_package(curvepress REQUIRED)
-target_link_libraries(my_target PRIVATE curvepress::curvepress)
-```
-
-```cpp
-#include <curvepress/curvepress.hpp>
-
-// RDP
-auto data = curvepress::compress_rdp(ts, val, 1.0);
-
-// VW
-auto data = curvepress::compress_vw(ts, val, 200);
-
-// RDP-N
-auto data = curvepress::compress_rdpn(ts, val, 200, 100.0);
-
-// Decompress
-auto dec = curvepress::decompress(data);
-// dec.timestamps_ns, dec.values
-
-// Interpolate
-double v = curvepress::interpolate(dec.timestamps_ns, dec.values, 5'000'000'000LL);
-```
-
-### Python
-
-```python
-import numpy as np
-from curvepress import compress_rdp, compress_vw, compress_rdpn, decompress, interpolate
-
-ts  = np.arange(10_000, dtype=np.int64) * 1_000_000   # ns
-val = np.sin(np.arange(10_000) * 0.01) * 100.0
-
-# RDP
-data = compress_rdp(ts, val, epsilon=0.5)
-
-# VW
-data = compress_vw(ts, val, n_out=200)
-
-# RDP-N
-data = compress_rdpn(ts, val, n_out=200, epsilon=100.0)
-
-# Decompress
-ts_out, val_out = decompress(data)
-print(f"Kept {len(ts_out)} of {len(ts)} points")
-
-# Interpolate
-v = interpolate(ts_out, val_out, t=5_000_000)
 ```
 
 ### WASM (JavaScript/TypeScript)
@@ -381,19 +262,11 @@ const v = interpolate(dec.timestamps, dec.values, 5_000_000_000n);
 
 ---
 
-## Building
+## Building & testing
 
 ```bash
 # Rust tests
 cargo test
-
-# C++ (requires Catch2 v3)
-cargo build --release --features capi
-cmake -S cpp -B cpp/build && cmake --build cpp/build && ctest --test-dir cpp/build
-
-# Python wheel (requires maturin)
-maturin develop --features python
-pytest tests/python/ -v
 
 # WASM (requires wasm-pack)
 wasm-pack build --target nodejs --out-dir pkg --features wasm

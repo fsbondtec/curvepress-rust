@@ -25,8 +25,6 @@ mod error;
 
 pub use error::CpError;
 
-#[cfg(feature = "capi")]   mod capi;
-#[cfg(feature = "python")] mod python;
 #[cfg(feature = "wasm")]   mod wasm;
 
 // ─── Internal types ──────────────────────────────────────────────────────────
