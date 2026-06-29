@@ -1,5 +1,7 @@
 name: Release (crates.io)
 
+# Build the Rust Package and publish to crates.io
+
 on:
   release:
     types: [published]
